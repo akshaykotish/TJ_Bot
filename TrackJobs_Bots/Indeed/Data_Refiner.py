@@ -12,6 +12,7 @@ class Indeed_Refiner(object):
         self.courses =  json.load(open("Courses.json"))
         self.toremove = json.load(open("toRemove.json"))
         self.Experience = json.load(open("Experience.json"))
+        self.Refined_JBs = []
 
 
 
@@ -61,10 +62,12 @@ class Indeed_Refiner(object):
         tokens = self.Refine_Tags(J_Details).split(" ")
         tokens = self.Remove_Grammer(tokens)
         
+        t_courses = []
         t_qualification = []
         t_programs = []
         t_experience = []
         t_extra_words = []
+
 
         Salaries = []
 
@@ -92,8 +95,17 @@ class Indeed_Refiner(object):
         elif len(Salaries) > 0:
             print("Salary: ", Salaries[0])
 
-            
-        #print(tokens)
+        print("\n")
+
+        Refined_Output = {
+            "Qualifications": t_qualification,
+            "Programs": t_programs,
+            "Experience": t_experience,
+            "Salary": Salaries,
+            "Courses": t_courses
+        }
+
+        return Refined_Output
         
 
 
@@ -102,10 +114,33 @@ class Indeed_Refiner(object):
         for job in self.json_data:
             Details  = job["Details"]
             
-            self.Extract_Qualification(Details)
+            RO = self.Extract_Qualification(Details)
+
+            JB = {
+                "URL": job["URL"], 
+                "Title": job["Title"],
+                "Location": job["Location"],
+                "Company Name": job["Company Name"],
+                "Details": job["Details"],
+                "Salary" : job["Salary"],
+                "Qualifications": RO["Qualifications"],
+                "Programs": RO["Programs"],
+                "Experience": RO["Experience"],
+                "Salary": RO["Salary"],
+                "Courses": RO["Courses"]
+            }
+
+            self.Refined_JBs.append(JB)
         
+
+    def Save_to_JSON(self):
+        jsn = json.dumps(self.Refined_JBs)
+        with open("indeed_jobs_refined_data.json", "w") as outfile:
+            outfile.write(jsn)
 
     def Execute(self):
         self.Read()
+        self.Save_to_JSON()
+
         
 

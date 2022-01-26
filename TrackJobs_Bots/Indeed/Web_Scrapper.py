@@ -18,12 +18,22 @@ class Indeed_Scrapper(object):
         self.AllJBs = []
 
 
+
     def Page_Counts(self):
+        proxies = {
+                "http": "http://92.222.108.217:3128"
+            }
+
         self.PageSource = requests.get(self.URL + "&start=" + str(self.Step))
         
         if self.PageSource.status_code == 200:
             PS = self.PageSource.text
             PS_HTML = BeautifulSoup(PS, 'html.parser')
+
+            if "captcha" in str(PS_HTML).lower():
+                #print("Captcha found!")
+
+
             Job_Count = PS_HTML.find("div", {"id":"searchCountPages"})
             Total_User = Job_Count.text
             Total_Users_InNumber = re.findall("[0-9]", Total_User)
@@ -66,7 +76,7 @@ class Indeed_Scrapper(object):
 
             JB = {
                 "URL":"https://in.indeed.com/viewjob?jk=" + job_id, 
-                "Title": Title.text,
+                "Title": Title.text if Title != None else "",
                 "Location": Company_Location.text.replace(Company_Name.text, ""),
                 "Company Name": Company_Name.text.replace("review", ""),
                 "Details": Job_Description.text,
