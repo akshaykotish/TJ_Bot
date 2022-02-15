@@ -22,13 +22,18 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="DataTools\Converter.py" />
+    <Compile Include="DataTools\Database.py" />
+    <Compile Include="DataTools\Job_Saver.py" />
+    <Compile Include="DataTools\Shifters.py" />
     <Compile Include="Indeed\Data_Refiner.py" />
     <Compile Include="Indeed\Web_Scrapper.py" />
+    <Compile Include="Pools\AutoPool.py" />
     <Compile Include="TrackJobs_Bots.py" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Indeed\" />
     <Folder Include="DataTools\" />
+    <Folder Include="Pools\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

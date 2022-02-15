@@ -62,7 +62,7 @@ class DTConverter(object):
                 output = output * 100 + 26
 
         
-        print(output)
+        #print(output)
         return output
 
     def Num2Words(self, data):
@@ -128,6 +128,6 @@ class DTConverter(object):
             
 
         
-        print(output)
+        #print(output)
         return output
 

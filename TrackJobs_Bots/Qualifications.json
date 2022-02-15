@@ -1,3 +1,23 @@
 [
-    "bachelor","bachelors","bachelor's", "master", "masters", "master's", "phd", "doctorate", "doctorates", "doctorate's", "diploma", "diplomas", "diploma's", "diplomahr", "b", "m", "graduate", "post", "degree"
+  "bachelor",
+  "bachelors",
+  "bachelor's",
+  "graduate",
+  "graduation",
+  "graduated",
+  "b",
+  "degree",
+  "master",
+  "masters",
+  "master's",
+  "post",
+  "m",
+  "phd",
+  "doctorate",
+  "doctorates",
+  "doctorate's",
+  "diploma",
+  "diplomas",
+  "diploma's",
+  "diplomahr"
 ]

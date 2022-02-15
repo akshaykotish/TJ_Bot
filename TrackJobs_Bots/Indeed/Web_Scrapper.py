@@ -4,7 +4,7 @@ import json
 import re
 import os
 from requests import status_codes
-
+import random
 import Indeed.Data_Refiner
 
 class Indeed_Scrapper(object):
@@ -17,46 +17,73 @@ class Indeed_Scrapper(object):
         self.PageSource = ""
         self.AllJBs = []
 
+        self.srch_keywords = []
+        self.location = ""
+        
+
+        self.proxies = [
+                {"http": "http://92.222.108.217:3128"},
+                {"http": "http://139.59.1.14:1080"},
+                {"http": "http://150.129.151.62:6667"},
+                {"http": "http://103.250.166.4:6667"},
+                {"http": "http://182.72.150.242:8080"},
+                {"http": "http://223.30.190.74:8080"},
+                {"http": "http://117.208.148.72:3128"},
+                {"http": "http://103.88.127.178:8080"},
+                {"http": "http://112.133.215.24:8080"},
+                {"http": "http://202.134.191.156:8080"},
+                {"http": "http://103.241.227.106:6666"},
+                {"http": "http://103.46.233.190:83"},
+                {"http": "http://103.240.161.109:6666"},
+                {"http": "http://103.248.93.5:8080"},
+                {"http": "http://103.35.132.189:83"}
+            ]
+
 
 
     def Page_Counts(self):
-        proxies = {
-                "http": "http://92.222.108.217:3128"
-            }
-
-        self.PageSource = requests.get(self.URL + "&start=" + str(self.Step))
         
-        if self.PageSource.status_code == 200:
-            PS = self.PageSource.text
-            PS_HTML = BeautifulSoup(PS, 'html.parser')
+        try:
 
-            if "captcha" in str(PS_HTML).lower():
-                #print("Captcha found!")
+            rndip = random.randint(0, 14)
+        
+            self.PageSource = requests.get(self.URL + "&start=" + str(self.Step), proxies=self.proxies[rndip])
+            print("Proxy is : ", self.proxies[rndip]["http"])
+        
+            if self.PageSource.status_code == 200:
+                PS = self.PageSource.text
+                PS_HTML = BeautifulSoup(PS, 'html.parser')
 
 
-            Job_Count = PS_HTML.find("div", {"id":"searchCountPages"})
-            Total_User = Job_Count.text
-            Total_Users_InNumber = re.findall("[0-9]", Total_User)
+                Job_Count = PS_HTML.find("div", {"id":"searchCountPages"})
+                Total_User = Job_Count.text if Job_Count != None else "0"
+                Total_Users_InNumber = re.findall("[0-9]", Total_User)
             
-            total_jobs = ""
-            for i in range(1, len(Total_Users_InNumber)):
-                total_jobs += Total_Users_InNumber[i]
+                total_jobs = ""
+                for i in range(1, len(Total_Users_InNumber)):
+                    total_jobs += Total_Users_InNumber[i]
 
-            self.Total_Jobs = int(total_jobs)
+                self.Total_Jobs = int(total_jobs)
 
+                print("Total Jobs: ", self.Total_Jobs)
+
+        except:
+            print("Wow")
 
 
 
 
 
     def Load_URL(self):
-        self.PageSource = requests.get(self.URL + "&start=" + str(self.Step))
+        rndip = random.randint(0, 14)
+        self.PageSource = requests.get(self.URL + "&start=" + str(self.Step), proxies=self.proxies[rndip])
         self.Step += 10
         self.Load_Data()
         
 
     def Load_JobView(self, job_id):
-        Job_Data = requests.get("https://in.indeed.com/viewjob?jk=" + job_id)
+        rndip = random.randint(0, 14)
+        Job_Data = requests.get("https://in.indeed.com/viewjob?jk=" + job_id, proxies=self.proxies[rndip])
 
         if Job_Data.status_code == 200:
             JD_HTML = BeautifulSoup(Job_Data.text, 'html.parser')
@@ -107,25 +134,27 @@ class Indeed_Scrapper(object):
                 self.Load_JobView(J_ID)
                 
 
+    def Set_Infos(self, title, location):
+        self.srch_keywords = str(title).split(" ")
+        self.location = location
 
 
 
     def Execute(self):
         self.Page_Counts()
 
-        
-        for i in range(0, self.Total_Jobs, 10):
-            os.system('CLS')  
+        if self.Total_Jobs > 0:
+            for i in range(0, self.Total_Jobs, 10):
+                os.system('CLS')  
 
-            iscomplete = round((i/self.Total_Jobs) * 100, 2)
-            output_msg = str(iscomplete) + "% of "+ str(self.Total_Jobs) +" indeed jobs downloaded\n TrackJobs, An Akshay Kotish & Co. Product"
-            print(output_msg)
-                
+                iscomplete = round((i/self.Total_Jobs) * 100, 2)
+                output_msg = str(iscomplete) + "% of "+ str(self.Total_Jobs) +" indeed jobs downloaded\n TrackJobs, An Akshay Kotish & Co. Product"
+                #print(output_msg)
+                self.Load_URL()
 
-            self.Load_URL()
-
-        ir = Indeed.Data_Refiner.Indeed_Refiner()
-        ir.Execute()
+            ir = Indeed.Data_Refiner.Indeed_Refiner()
+            ir.Set_Infos(self.srch_keywords, self.location)
+            ir.Execute()
 
     
     

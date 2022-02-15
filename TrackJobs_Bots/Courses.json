@@ -1,1 +1,19 @@
-["mechanical engineer", ""]
+{
+  "engineer": [
+    "software",
+    "mechanical",
+    "it",
+    "civil",
+    "electrical",
+    "electronics",
+    "data",
+    "signal",
+    "programming",
+    "c++",
+    "uiux",
+    "ui",
+    "ux",
+    "java",
+    "python"
+  ]
+}

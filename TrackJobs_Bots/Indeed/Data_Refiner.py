@@ -1,5 +1,7 @@
 ﻿import json
 from os import W_OK
+import DataTools.Job_Saver
+
 
 class Indeed_Refiner(object):
     
@@ -13,6 +15,14 @@ class Indeed_Refiner(object):
         self.toremove = json.load(open("toRemove.json"))
         self.Experience = json.load(open("Experience.json"))
         self.Refined_JBs = []
+
+        self.Programe = "any"
+        self.Course = "any"
+        
+        self.srch_keywords = []
+        self.location = ""
+
+        self.data = {}
 
 
 
@@ -74,28 +84,28 @@ class Indeed_Refiner(object):
         for word in tokens:
             
             if word.lower() in self.qualifications:
-                t_qualification.append(word)
+                t_qualification.append(word.lower())
             elif word.lower() in self.programs:
-                t_programs.append(word)
+                t_programs.append(word.lower())
             elif self.Extract_Salary(word) == True:
-                Salaries.append(word)
+                Salaries.append(word.lower())
             elif word.lower() in self.Experience:
-                t_experience.append(word)
+                t_experience.append(word.lower())
             else:
-                t_extra_words.append(word)
+                t_extra_words.append(word.lower())
                 
         
-        print("Qualifications: ", t_qualification)
-        print("Programs: ", t_programs)
-        print("Experience", t_experience)
+        #print("Qualifications: ", t_qualification)
+        #print("Programs: ", t_programs)
+        #print("Experience", t_experience)
         #print("Extra: ", t_extra_words)
 
-        if len(Salaries) >= 2:
-            print("Salary: ", Salaries[0], " - ", Salaries[len(Salaries) - 1])
-        elif len(Salaries) > 0:
-            print("Salary: ", Salaries[0])
+        #if len(Salaries) >= 2:
+            #print("Salary: ", Salaries[0], " - ", Salaries[len(Salaries) - 1])
+        #elif len(Salaries) > 0:
+            #print("Salary: ", Salaries[0])
 
-        print("\n")
+        #print("\n")
 
         Refined_Output = {
             "Qualifications": t_qualification,
@@ -107,19 +117,40 @@ class Indeed_Refiner(object):
 
         return Refined_Output
         
-
-
+    
     def Refine(self):
+
+        JS = DataTools.Job_Saver.JobSaver()
+        
+        country = "India"
+        
 
         for job in self.json_data:
             Details  = job["Details"]
             
             RO = self.Extract_Qualification(Details)
 
+        
+            locs = str(job["Location"]).replace(" ", "").split(",")
+            if len(locs) == 0:
+                locs.append("anycity")
+                locs.append("anystate")
+                locs.append("anycountry")
+            elif len(locs) == 1:
+                locs.append("anystate")
+                locs.append("anycountry")
+            elif len(locs) == 2:
+                locs.append("anycountry")
+                
+
+
             JB = {
                 "URL": job["URL"], 
                 "Title": job["Title"],
                 "Location": job["Location"],
+                "City": locs[0],
+                "State": locs[1],
+                "Country": locs[2],
                 "Company Name": job["Company Name"],
                 "Details": job["Details"],
                 "Salary" : job["Salary"],
@@ -127,16 +158,64 @@ class Indeed_Refiner(object):
                 "Programs": RO["Programs"],
                 "Experience": RO["Experience"],
                 "Salary": RO["Salary"],
-                "Courses": RO["Courses"]
+                "Courses": RO["Courses"],
+                "Programe": self.Programe,
+                "Course": self.Course
             }
 
+
+            JS.Job_Saver(JB)
+
+            
+            #Country/State/City/Qualification/Program/Experience/JobID
+            #Country/State/City/Qualification/Program/Experience/JobID
             self.Refined_JBs.append(JB)
+        JS.Save()
         
 
     def Save_to_JSON(self):
         jsn = json.dumps(self.Refined_JBs)
         with open("indeed_jobs_refined_data.json", "w") as outfile:
             outfile.write(jsn)
+
+    def Set_Infos(self, title, location):
+        self.srch_keywords = title
+        self.location = location
+        self.Find_Course_Sub_Course()
+
+
+    def Find_Course_Sub_Course(self):
+        Programe = "any"
+        Course = "any"
+
+        for word in self.srch_keywords:
+            temp_c = ""
+            try:
+                temp_c = str(self.courses[word])
+            except:
+                temp_c = "any"
+
+            if temp_c != "any":
+                self.Programe = str(word)
+                break
+
+        if Programe != "any":
+            crs = self.courses[Programe]
+            for c in crs:
+                if c in self.srch_keywords:
+                    self.Course = c
+                    break
+
+        elif Programe == "any":
+            for prgrms in self.courses:
+                crs = self.courses[prgrms]
+                for cours in crs:
+                    if cours in self.srch_keywords:
+                        self.Course = cours
+                        self.Programe = prgrms
+
+        #print(self.Programe, self.Course)
+    
 
     def Execute(self):
         self.Read()
